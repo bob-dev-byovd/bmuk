@@ -1208,7 +1208,7 @@ h2 {
   overflow-wrap: anywhere;
   transition: color 0.3s;
 }
-.record-class {
+.record-status {
   display: inline-block;
   border: 1px solid #4c6137;
   padding: 6px 10px;
@@ -1217,11 +1217,6 @@ h2 {
 }
 .disclosure-record.is-pointer-active .record-vendor {
   color: var(--accent);
-}
-.record-status {
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.8;
 }
 .record-identifier {
   display: block;
@@ -2879,11 +2874,10 @@ tfoot th {
   .record-vendor {
     font-size: 11px;
   }
-  .record-class {
+  .record-status {
     font-size: 9px;
     padding: 5px 8px;
   }
-  .record-status,
   .record-identifier {
     font-size: 10px;
   }

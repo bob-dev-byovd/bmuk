@@ -463,8 +463,8 @@ function renderDisclosures() {
           escapeHTML(record.reportedAt.replaceAll("-", ".")) +
           '</time></div><div class="record-copy"><p><span class="sr-only">핵심 취약점: </span>' +
           escapeHTML(record.description) +
-          '</p></div><div class="record-meta"><span class="sr-only">DrvTriage class: </span><span class="record-class">' +
-          escapeHTML(record.classification || "—") +
+          '</p></div><div class="record-meta"><span class="sr-only">상태: </span><span class="record-status">' +
+          escapeHTML(record.status || "—") +
           "</span></div></li>",
       )
       .join("") ||

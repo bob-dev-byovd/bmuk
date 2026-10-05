@@ -339,86 +339,86 @@ export const siteData = {
   },
   disclosures: [
     // 벤더명은 이미 가린 값만 저장합니다. 식별 정보는 공개 소스에 넣지 않습니다.
-    // class는 사용자가 제공한 판정값만 기록합니다. 미제공 항목은 빈 값으로 둡니다.
+    // status는 제보 진행 상태입니다. 현재 모든 제보는 PENDING으로 표시합니다.
     // reportedAt은 제보일이며 YYYY-MM-DD 형식으로 기록합니다.
     {
       vendor: "D***",
       description:
         "객체 타입 혼동(Object Type Confusion) 의심으로 인한 Kernel DoS",
-      classification: "CONDITIONAL",
+      status: "PENDING",
       reportedAt: "2026-09-05",
     },
     {
       vendor: "B**************",
       description:
         "필터 통신 포트 요청의 권한·대상 검증 미흡으로 임의 프로세스 및 PPL 종료",
-      classification: "PRIMITIVE",
+      status: "PENDING",
       reportedAt: "2026-09-08",
     },
     {
       vendor: "H******",
       description:
         "물리 주소 검증 없는 읽기·쓰기 IOCTL로 임의 물리 메모리 접근 및 SYSTEM 권한 상승",
-      classification: "PRIMITIVE",
+      status: "PENDING",
       reportedAt: "2026-09-15",
     },
     {
       vendor: "O**********************",
       description:
         "FILE_ANY_ACCESS IOCTL로 임의 물리 메모리를 쓰기 가능하게 매핑하여 SYSTEM 권한 상승",
-      classification: "CONDITIONAL",
+      status: "PENDING",
       reportedAt: "2026-09-19",
     },
     {
       vendor: "S************",
       description:
         "프로세스 종료 IOCTL의 인가 누락으로 일반 사용자가 PPL·Defender 프로세스 종료 가능",
-      classification: "PRIMITIVE",
+      status: "PENDING",
       reportedAt: "2026-09-20",
     },
     {
       vendor: "N************************",
       description:
         "operation 인덱스 미검증과 사용자 객체 포인터 신뢰로 커널 주소 노출·임의 커널 호출 및 SYSTEM 권한 상승",
-      classification: "UNREADABLE",
+      status: "PENDING",
       reportedAt: "2026-09-21",
     },
     {
       vendor: "I**************************",
       description:
         "사용자 callback/context를 신뢰해 커널 주소 노출·임의 커널 읽기/쓰기 및 SYSTEM 권한 상승",
-      classification: "CONDITIONAL",
+      status: "PENDING",
       reportedAt: "2026-09-22",
     },
     {
       vendor: "A*****",
       description: "임의 드라이버의 IOCTL dispatch callback 비활성화",
-      classification: "PRIMITIVE",
+      status: "PENDING",
       reportedAt: "2026-10-02",
     },
     {
       vendor: "n*******",
       description: "포인터 역참조로 인한 Kernel DoS",
-      classification: "UNCLEARED",
+      status: "PENDING",
       reportedAt: "2026-10-02",
     },
     {
       vendor: "C*******",
       description: "PCI 설정 오용으로 인한 Kernel DoS",
-      classification: "UNCLEARED",
+      status: "PENDING",
       reportedAt: "2026-10-03",
     },
     {
       vendor: "C**************************",
       description:
         "파일 시스템 콜백 인가 누락으로 비특권 사용자의 SYSTEM 프로세스 I/O 무력화",
-      classification: "PRIMITIVE",
+      status: "PENDING",
       reportedAt: "2026-10-04",
     },
     {
       vendor: "K*****",
       description: "임의 커널 읽기/쓰기 및 권한 상승",
-      classification: "CONDITIONAL",
+      status: "PENDING",
       reportedAt: "2026-10-05",
     },
   ],

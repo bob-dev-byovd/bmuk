@@ -310,16 +310,13 @@ test("twelve reports preserve masked vendor lengths without identifiers", () => 
     const [initial, length] = expectedMasks[index];
     assert.equal(record.vendor, initial + "*".repeat(length - 1));
     assert.deepEqual(Object.keys(record).sort(), [
-      "classification",
       "description",
       "reportedAt",
+      "status",
       "vendor",
     ]);
     assert.ok(record.description.length > 10);
-    assert.ok(
-      record.classification === "" ||
-        expectedClasses.includes(record.classification),
-    );
+    assert.equal(record.status, "PENDING");
     assert.doesNotMatch(
       JSON.stringify(record),
       /[a-z0-9_-]+\.sys\b|\b\d+(?:\.\d+){2,}\b/i,
@@ -331,30 +328,31 @@ test("twelve reports preserve masked vendor lengths without identifiers", () => 
   );
 });
 
-test("disclosure classes match the supplied verdicts without provisional labels", async () => {
+test("Reports show a PENDING status for all twelve disclosures instead of a class", async () => {
   assert.deepEqual(
-    siteData.disclosures.map((record) => record.classification),
-    [
-      "CONDITIONAL",
-      "PRIMITIVE",
-      "PRIMITIVE",
-      "CONDITIONAL",
-      "PRIMITIVE",
-      "UNREADABLE",
-      "CONDITIONAL",
-      "PRIMITIVE",
-      "UNCLEARED",
-      "UNCLEARED",
-      "PRIMITIVE",
-      "CONDITIONAL",
-    ],
+    siteData.disclosures.map((record) => record.status),
+    Array(12).fill("PENDING"),
   );
   const [html, app] = await Promise.all([
     readFile(new URL("../index.html", import.meta.url), "utf8"),
     readFile(new URL("../app.js", import.meta.url), "utf8"),
   ]);
-  assert.ok(html.includes("<span>DrvTriage class</span>"));
-  assert.ok(app.includes('class="record-class"'));
+  const reports = html.slice(
+    html.indexOf('id="disclosures"'),
+    html.indexOf('id="team"'),
+  );
+  const renderer = app.slice(
+    app.indexOf("function renderDisclosures()"),
+    app.indexOf("function renderContact()"),
+  );
+  assert.ok(reports.includes("<span>상태</span>"));
+  assert.ok(renderer.includes('<span class="sr-only">상태: </span>'));
+  assert.ok(renderer.includes('class="record-status"'));
+  assert.ok(renderer.includes('escapeHTML(record.status || "—")'));
+  assert.doesNotMatch(
+    reports + renderer,
+    /DrvTriage class|record-class|record\.classification/,
+  );
   assert.doesNotMatch(html, /disclosure-class-note|잠정 값/);
   assert.doesNotMatch(
     app,
