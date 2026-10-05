@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090b09" />
+    <meta
+      name="description"
+      content="Windows 커널 드라이버의 정적 분석 결과를 다음 검토 작업으로 연결하는 연구. 다섯 가지 분류, 판단 근거와 3,389건의 평가 결과를 소개합니다."
+    />
+    <title>Driver exploit pipeline for BYOVD</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#main">본문으로 바로가기</a>
+    <div class="reading-progress" aria-hidden="true"><span></span></div>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#top" aria-label="BMUK 처음으로">
+          <svg
+            class="brand-window"
+            viewBox="0 0 32 32"
+            fill="none"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <defs>
+              <linearGradient
+                id="brand-window-fill"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop offset="0%" stop-color="#e1ffa9" />
+                <stop offset="36%" stop-color="#c7ff6b" />
+                <stop offset="76%" stop-color="#94c842" />
+                <stop offset="100%" stop-color="#79a535" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M2 2h12v12H2z M17 2h12v12H17z M2 17h12v12H2z M17 17h12v12H17z"
+              fill="#486f19"
+              transform="translate(1 1.5)"
+            />
+            <g
+              fill="url(#brand-window-fill)"
+              stroke="#e3ffb7"
+              stroke-opacity=".75"
+              stroke-width=".4"
+            >
+              <rect
+                class="brand-window-pane"
+                x="2"
+                y="2"
+                width="12"
+                height="12"
+              />
+              <rect
+                class="brand-window-pane"
+                x="17"
+                y="2"
+                width="12"
+                height="12"
+              />
+              <rect
+                class="brand-window-pane"
+                x="2"
+                y="17"
+                width="12"
+                height="12"
+              />
+              <rect
+                class="brand-window-pane"
+                x="17"
+                y="17"
+                width="12"
+                height="12"
+              />
+            </g>
+          </svg>
+          <span
+            ><span data-copy="name">BMUK</span
+            ><span class="accent">.</span></span
+          >
+        </a>
+        <nav class="main-nav" aria-label="주 메뉴">
+          <a href="#results">파이프라인</a>
+          <a href="#disclosures">제보</a>
+          <a href="#team">팀원</a>
+          <a href="#contact">연락</a>
+        </nav>
+        <a
+          class="header-source"
+          data-repository
+          href="https://github.com/bob-dev-byovd/static-analyzer"
+          target="_blank"
+          rel="noopener noreferrer"
+          >GitHub <span aria-hidden="true">↗</span
+          ><span class="sr-only"> (접근 권한 필요, 새 창)</span></a
+        >
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero container" aria-labelledby="hero-title">
+        <div class="hero-content">
+          <p class="eyebrow" data-copy="hero.eyebrow">BOB EXPLOIT DEV</p>
+          <h1 id="hero-title">
+            <span data-copy="hero.title">Driver exploit</span><br /><span
+              data-copy="hero.line"
+              >pipeline for</span
+            ><br /><em data-copy="hero.accent">BYOVD</em>
+          </h1>
+          <p class="hero-subtitle" data-copy="hero.subtitle">
+            Windows kernel driver triage and automated classification by
+            follow-up workflow.
+          </p>
+        </div>
+        <div class="hero-art" data-pointer-surface="windows" aria-hidden="true">
+          <div class="window-stage">
+            <div class="window-float">
+              <div class="window-logo">
+                <span class="window-pane"></span>
+                <span class="window-pane"></span>
+                <span class="window-pane"></span>
+                <span class="window-pane"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-footer">
+          <button
+            class="motion-toggle hero-motion-toggle"
+            type="button"
+            aria-pressed="false"
+            hidden
+          >
+            모션 끄기
+          </button>
+        </div>
+      </section>
+
+      <section
+        class="section container results-section"
+        id="results"
+        aria-labelledby="results-title"
+      >
+        <div class="section-grid" data-reveal>
+          <div class="section-heading">
+            <p class="eyebrow">01 / EVALUATION</p>
+            <h2 id="results-title">
+              Pipeline <span class="accent">Overview</span>
+            </h2>
+          </div>
+          <p class="section-body body-copy" data-copy="results.intro"></p>
+        </div>
+
+        <figure
+          class="overview-diagram"
+          data-reveal
+          aria-label="SYS 파일에서 DrvTriage 분류와 후속 검토로 이어지는 전체 파이프라인"
+        >
+          <div class="overview-flow" id="overview-flow">
+            <div class="overview-inputs">
+              <div class="overview-file">
+                <span class="overview-file-icon" aria-hidden="true">
+                  <svg viewBox="0 0 40 48" fill="none">
+                    <path
+                      d="M7 2h17l10 10v34H7V2Z M24 2v11h10 M13 24h15 M13 31h15 M13 38h9"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                    />
+                  </svg>
+                </span>
+                <span class="overview-file-name">SYS</span>
+              </div>
+              <span class="overview-feed" aria-hidden="true"
+                ><span class="overview-signal"></span
+              ></span>
+              <div class="overview-hub">
+                <span class="overview-node-label">STATIC TRIAGE</span>
+                <strong data-copy="tool.name">DrvTriage</strong>
+                <span class="overview-hub-note">정적 분석 · 분류</span>
+              </div>
+            </div>
+            <ol
+              class="overview-branches"
+              id="overview-branches"
+              aria-label="다섯 가지 분류와 각각의 후속 검토 순서"
+            ></ol>
+          </div>
+          <figcaption class="overview-caption">
+            <span class="overview-hint">Hover or tap a class to explore</span>
+            분류 이후는 별도의 후속 검토입니다. 분류 자체가 취약점 확정을
+            뜻하지는 않습니다.
+          </figcaption>
+        </figure>
+
+        <div
+          class="pipeline"
+          id="research-pipeline"
+          role="group"
+          aria-labelledby="tool-title"
+        >
+          <div class="tool-showcase" data-reveal data-pointer-surface="card">
+            <div class="tool-copy">
+              <div class="tool-summary">
+                <p class="eyebrow" data-copy="tool.eyebrow">
+                  INSIDE THE TOOL / PYTHON CLI
+                </p>
+                <h3 id="tool-title" data-copy="tool.name">DrvTriage</h3>
+                <p class="body-copy" data-copy="tool.description"></p>
+              </div>
+              <div class="tool-actions">
+                <a
+                  class="text-link"
+                  data-repository
+                  href="https://github.com/bob-dev-byovd/static-analyzer"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >GitHub에서 도구 보기 <span aria-hidden="true">↗</span
+                  ><span class="sr-only"> (새 창)</span></a
+                >
+                <span class="tool-link-note">저장소 접근 권한 필요</span>
+              </div>
+            </div>
+            <div class="pipeline-controls">
+              <ol
+                class="tool-flow"
+                id="tool-flow"
+                aria-label="DrvTriage 내부 파이프라인 단계별 설명"
+                aria-describedby="pipeline-help"
+              ></ol>
+              <p class="pipeline-hint" id="pipeline-help">
+                Hover or tap to explore
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="pipeline-panel"
+            id="pipeline-acquisition"
+            role="region"
+            aria-labelledby="flow-acquisition"
+            hidden
+          >
+            <div class="pipeline-panel-header">
+              <p class="eyebrow">01 / ACQUISITION</p>
+              <button
+                class="pipeline-close"
+                type="button"
+                data-pipeline-close
+                aria-label="Acquisition 설명 닫기"
+              >
+                닫기 <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div class="pipeline-notes" id="acquisition-notes"></div>
+          </div>
+
+          <div
+            class="pipeline-panel"
+            id="pipeline-analysis"
+            role="region"
+            aria-labelledby="flow-analysis"
+            hidden
+          >
+            <div class="pipeline-panel-header">
+              <p class="eyebrow">02 / ANALYSIS</p>
+              <button
+                class="pipeline-close"
+                type="button"
+                data-pipeline-close
+                aria-label="Analysis 설명 닫기"
+              >
+                닫기 <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div class="pipeline-notes" id="analysis-notes"></div>
+          </div>
+
+          <div
+            class="pipeline-panel"
+            id="pipeline-classify"
+            role="region"
+            aria-labelledby="flow-classify"
+            hidden
+          >
+            <div class="pipeline-panel-header">
+              <p class="eyebrow">03 / CLASSIFY</p>
+              <button
+                class="pipeline-close"
+                type="button"
+                data-pipeline-close
+                aria-label="Classify 설명 닫기"
+              >
+                닫기 <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <div class="section-grid idea-intro">
+              <div>
+                <h3
+                  class="pipeline-idea-title"
+                  id="idea-title"
+                  data-copy="idea.title"
+                >
+                  후속 작업에 따른 분류 기준
+                </h3>
+              </div>
+              <div class="section-body">
+                <p class="body-copy" data-copy="idea.description"></p>
+              </div>
+            </div>
+
+            <div
+              class="classification"
+              aria-label="드라이버의 다섯 가지 분류와 후속 검토 작업"
+            >
+              <div class="classification-heading" aria-hidden="true">
+                <span>분류</span><span>확인한 상태</span
+                ><span>다음 검토 작업</span>
+              </div>
+              <ol id="classification-list" class="classification-list"></ol>
+            </div>
+            <p class="table-note" data-reveal data-copy="idea.caution"></p>
+
+            <details class="disclosure" id="implementation">
+              <summary>
+                <span>연구 배경과 분석 방법</span
+                ><span class="summary-meta"
+                  >문제 정의 · 분석 구조 · 참고 자료</span
+                ><span class="expand-icon" aria-hidden="true"></span>
+              </summary>
+              <div class="disclosure-content">
+                <div class="detail-block background-detail">
+                  <h3 data-copy="overview.lead">
+                    서명은 출처와 무결성의 근거이지, 취약점이 없다는 보증은
+                    아닙니다.
+                  </h3>
+                  <div id="background-copy" class="prose"></div>
+                  <div class="research-question">
+                    <span class="eyebrow">OUR QUESTION</span>
+                    <p data-copy="overview.question"></p>
+                  </div>
+                  <p class="scope-note" data-copy="overview.scope"></p>
+                </div>
+                <p class="detail-intro" data-copy="implementation.intro"></p>
+                <ol class="method-list" id="method-list"></ol>
+                <h3>같은 분류 안에서만 순서를 정합니다.</h3>
+                <p class="body-copy" data-copy="implementation.ranking"></p>
+                <div class="detail-notes" id="implementation-notes"></div>
+                <p
+                  class="implementation-stack mono"
+                  data-copy="implementation.stack"
+                ></p>
+                <div class="reference-block">
+                  <h3>연구 자료와 참고 문헌</h3>
+                  <p class="body-copy">
+                    구현 설명과 수치는 제공된 연구보고서 기준입니다. 아래 문헌은
+                    배경과 관련 연구의 출처이며, 본 프로젝트의 실험 결과를
+                    검증하는 자료는 아닙니다.
+                  </p>
+                  <ol id="source-list" class="source-list"></ol>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div
+          class="metrics"
+          id="metrics"
+          aria-label="연구 평가 요약"
+          data-reveal
+        ></div>
+
+        <div class="selection" data-reveal>
+          <div class="selection-copy">
+            <p class="eyebrow">FROM ANALYSIS TO REVIEW</p>
+            <h3>
+              <span class="accent" data-stat="review">262</span> for review.
+            </h3>
+            <p class="body-copy" data-copy="results.selectionDescription"></p>
+          </div>
+          <div class="selection-data">
+            <p class="chart-title">
+              신규 탐색 집합
+              <strong><span data-stat="exploration">1,398</span>건</strong>
+            </p>
+            <div
+              class="distribution-bar"
+              id="distribution-bar"
+              role="img"
+              aria-label="신규 탐색 대상 분류 비율"
+            ></div>
+            <dl class="distribution-legend" id="distribution-legend"></dl>
+          </div>
+        </div>
+
+        <div class="observation" data-reveal>
+          <span class="eyebrow">VM OBSERVATION</span>
+          <p>
+            <strong>로드와 디바이스 생성은 다른 조건입니다.</strong> CONDITIONAL
+            중 <span data-stat="conditionalLoaded">145</span>건이 로드됐지만,
+            디바이스 생성은
+            <span data-stat="conditionalDevices">0</span>건이었습니다. 이는
+            필요한 장치가 없는 시험 환경에서의 관측이며, 모든 환경에 대한 결론은
+            아닙니다.
+          </p>
+        </div>
+
+        <details class="disclosure" id="evaluation-details">
+          <summary>
+            <span>평가 데이터와 상세 결과</span
+            ><span class="summary-meta"
+              >수집원별 분류 · 양성 대조군 · VM 관측</span
+            ><span class="expand-icon" aria-hidden="true"></span>
+          </summary>
+          <div class="disclosure-content evaluation-content">
+            <div class="detail-block">
+              <h3>수집원별 분류 결과</h3>
+              <p class="body-copy">
+                Microsoft Update Catalog와 벤더 배포본은 신규 탐색 집합,
+                LOLDrivers는 알려진 사례를 점검하는 비교 집합입니다.
+              </p>
+              <div
+                class="table-scroll"
+                tabindex="0"
+                role="region"
+                aria-label="수집원별 분류 결과 표, 좁은 화면에서는 좌우로 스크롤"
+              >
+                <table id="classification-table">
+                  <caption class="sr-only">
+                    수집원별 드라이버 분류 결과. 단위: 건.
+                  </caption>
+                </table>
+              </div>
+              <p class="table-note">
+                LOLDrivers 1,991건 전체가 취약 드라이버인 것은 아닙니다. 양성
+                대조군 평가에는 취약 라벨 1,684건만 사용했으며, 악성 드라이버
+                라벨 307건은 제외했습니다.
+              </p>
+            </div>
+            <div class="detail-block">
+              <h3>알려진 취약 드라이버의 후속 분석 유지율</h3>
+              <div
+                class="table-scroll"
+                tabindex="0"
+                role="region"
+                aria-label="양성 대조군 결과 표"
+              >
+                <table id="retention-table">
+                  <caption class="sr-only">
+                    취약 드라이버 표본의 후속 분석 대상 유지율
+                  </caption>
+                </table>
+              </div>
+              <p class="table-note">
+                PRIMITIVE·UNCLEARED·CONDITIONAL로 분류된 비율입니다. 일반
+                드라이버에 대한 탐지 정확도나 오탐률을 뜻하지 않습니다. 전체
+                표본에서 유지되지 않은 647건 중 631건은 명시적 제외, 16건은
+                UNREADABLE로 재분석 대상에 남았습니다.
+              </p>
+            </div>
+            <div class="detail-block">
+              <h3>신규 탐색 집합의 가상 환경 관측</h3>
+              <div
+                class="table-scroll"
+                tabindex="0"
+                role="region"
+                aria-label="가상 환경 로드와 디바이스 생성 결과 표, 좁은 화면에서는 좌우로 스크롤"
+              >
+                <table id="vm-table">
+                  <caption class="sr-only">
+                    신규 탐색 집합 1,398건의 가상 환경 관측 결과
+                  </caption>
+                </table>
+              </div>
+              <p class="table-note">
+                로드율 = 로드 성공 / 대상 수. 디바이스 생성률 = 디바이스 생성 /
+                로드 성공. 객체 생성만으로 비특권 호출자의 접근 권한이나 취약점
+                성립이 검증된 것은 아닙니다.
+              </p>
+              <p class="body-copy">
+                OUT에서도 48건이 로드됐습니다. 제외 판정은 현재 평가 범위의
+                판단이지, 모든 환경에서 로드가 차단된다는 뜻이 아닙니다.
+                UNREADABLE의 디바이스 생성 138건은 판독 실패 대상을 재분석
+                목록에 남겨야 할 이유를 보여줍니다.
+              </p>
+            </div>
+            <div class="detail-block">
+              <h3>해석의 범위와 남은 과제</h3>
+              <div id="limitations" class="limitations"></div>
+              <p class="closing-note" data-copy="closing"></p>
+            </div>
+            <div class="detail-block timing-note">
+              <h3>분석과 재분류는 별도 측정입니다.</h3>
+              <p class="body-copy">
+                전체 분석은 약 <span data-stat="analysisMinutes">48</span>분,
+                건당 평균 약
+                <span data-stat="secondsPerDriver">0.85</span>초였습니다. 추출된
+                사실을 재사용한 분류 규칙 재평가는 약
+                <span data-stat="reclassificationSeconds">0.2</span>초였으며,
+                파일 재분석 시간과 직접 비교할 수 없습니다.
+              </p>
+            </div>
+          </div>
+        </details>
+        <p class="provenance" data-copy="results.provenance"></p>
+      </section>
+
+      <section
+        class="section container disclosures-section"
+        id="disclosures"
+        aria-labelledby="disclosures-title"
+      >
+        <div class="section-grid" data-reveal>
+          <div class="section-heading">
+            <p class="eyebrow">02 / RESPONSIBLE DISCLOSURE</p>
+            <h2 id="disclosures-title">Reports</h2>
+          </div>
+        </div>
+        <div class="disclosure-heading" aria-hidden="true">
+          <span>벤더 / 제보일</span><span>핵심 취약점</span
+          ><span>DrvTriage class</span>
+        </div>
+        <ol
+          class="disclosure-list"
+          id="disclosure-list"
+          aria-label="익명화한 취약점 제보 사례"
+        ></ol>
+      </section>
+
+      <section
+        class="section container team-section"
+        id="team"
+        aria-labelledby="team-title"
+      >
+        <div class="section-grid" data-reveal>
+          <div class="section-heading">
+            <p class="eyebrow">03 / THE TEAM</p>
+            <h2 id="team-title">Our Team</h2>
+          </div>
+        </div>
+        <ol class="team-list" id="team-list" aria-label="팀원 4명"></ol>
+      </section>
+
+      <section
+        class="section container contact-section"
+        id="contact"
+        aria-labelledby="contact-title"
+      >
+        <div class="section-grid" data-reveal>
+          <div class="section-heading">
+            <p class="eyebrow">04 / GET IN TOUCH</p>
+            <h2 id="contact-title">Contact Us<span class="accent">.</span></h2>
+          </div>
+          <div class="section-body contact-body">
+            <div id="contact-links"></div>
+          </div>
+        </div>
+      </section>
+
+      <noscript
+        ><p class="container noscript-note">
+          분류 목록과 평가 표를 읽으려면 JavaScript를 켜 주세요. 페이지 개요와
+          참고 저장소 링크는 그대로 이용할 수 있습니다.
+        </p></noscript
+      >
+    </main>
+
+    <footer class="site-footer container">
+      <div>
+        <a class="footer-brand" href="#top"
+          ><span data-copy="name">BMUK</span><span class="accent">.</span></a
+        >
+        <p>근거를 남기는 보안 연구.</p>
+      </div>
+      <div class="footer-actions">
+        <a
+          data-repository
+          href="https://github.com/bob-dev-byovd/static-analyzer"
+          target="_blank"
+          rel="noopener noreferrer"
+          >프로젝트 GitHub <span aria-hidden="true">↗</span
+          ><span class="sr-only"> (새 창)</span></a
+        >
+        <span class="repository-note">저장소 접근 권한 필요</span>
+        <button class="motion-toggle" type="button" aria-pressed="false" hidden>
+          모션 끄기
+        </button>
+      </div>
+    </footer>
+  </body>
+</html>

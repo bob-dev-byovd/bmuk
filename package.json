@@ -1,0 +1,17 @@
+{
+  "name": "trace-research-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Driver exploit pipeline for BYOVD 연구 소개 웹사이트",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "preview": "node scripts/serve.mjs --dir dist --port 4173"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
