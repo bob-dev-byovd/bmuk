@@ -8,7 +8,7 @@ export const siteData = {
   title: "Driver exploit pipeline for BYOVD",
   description:
     "Windows 커널 드라이버의 정적 분석 결과를 다음 검토 작업으로 연결하는 연구. 다섯 가지 분류, 판단 근거와 3,389건의 평가 결과를 소개합니다.",
-  repository: "https://github.com/bob-dev-byovd/static-analyzer",
+  repository: "https://github.com/bob-dev-byovd/DrvTriage",
   hero: {
     eyebrow: "BOB EXPLOIT DEV",
     title: "Driver exploit",
@@ -225,8 +225,8 @@ export const siteData = {
       id: "project",
       label: "프로젝트 저장소",
       shortLabel: "프로젝트",
-      url: "https://github.com/bob-dev-byovd/static-analyzer",
-      note: "bob-dev-byovd/static-analyzer · 비공개 저장소, 접근 권한 필요",
+      url: "https://github.com/bob-dev-byovd/DrvTriage",
+      note: "bob-dev-byovd/DrvTriage · 비공개 저장소, 접근 권한 필요",
     },
     {
       id: "eset",

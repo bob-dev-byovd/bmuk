@@ -50,6 +50,28 @@ test("the page places the team before contact in the requested five-part order",
   );
 });
 
+test("project GitHub links point to DrvTriage, including static HTML fallbacks", async () => {
+  const repository = "https://github.com/bob-dev-byovd/DrvTriage";
+  const [html, readme] = await Promise.all([
+    readFile(new URL("../index.html", import.meta.url), "utf8"),
+    readFile(new URL("../README.md", import.meta.url), "utf8"),
+  ]);
+  assert.equal(siteData.repository, repository);
+  const source = siteData.sources.find((item) => item.id === "project");
+  assert.equal(source.url, repository);
+  assert.ok(source.note.includes("bob-dev-byovd/DrvTriage"));
+  const links = [...html.matchAll(/<a\b[^>]*\bdata-repository\b[^>]*>/g)];
+  assert.equal(links.length, 3);
+  for (const [link] of links) {
+    assert.equal(link.match(/\bhref="([^"]+)"/)[1], repository);
+  }
+  assert.ok(readme.includes(repository));
+  assert.doesNotMatch(
+    html + readme + JSON.stringify(siteData),
+    /https:\/\/github\.com\/bob-dev-byovd\/static-analyzer\b/,
+  );
+});
+
 test("team roles and emails match the supplied names without reordering members", () => {
   assert.deepEqual(
     siteData.team.map(({ name, role, email }) => [name, role, email]),
